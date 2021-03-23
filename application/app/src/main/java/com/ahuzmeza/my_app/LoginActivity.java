@@ -1,16 +1,46 @@
 package com.ahuzmeza.my_app;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.ahuzmeza.my_app.Helpers.RequestHandler;
+import com.ahuzmeza.my_app.Helpers.SharedPrefManager;
+import com.ahuzmeza.my_app.Helpers.URLs;
+import com.ahuzmeza.my_app.Helpers.Users_profile;
+
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.HashMap;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+import static okhttp3.MediaType.*;
+
 public class LoginActivity extends AppCompatActivity {
 
-    EditText editEmail;
+    private static final String IPV4ADRESS = "192.168.1.6";
+    private static final int PORT_NUMBER = 5000;
+
+    static String postUrl = "http://" + IPV4ADRESS + ":" + PORT_NUMBER + "/";
+
+    EditText editUsername;
     EditText editPassword;
     Button btnLogin;
     Button btnRegister;
@@ -20,25 +50,22 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        editEmail = findViewById(R.id.tb_email);
+        editUsername = findViewById(R.id.tb_username);
         editPassword = findViewById(R.id.tb_password);
         btnLogin = findViewById(R.id.btn_login);
         btnRegister = findViewById(R.id.btn_register);
 
+        // if the user is already logged in we will directly start the profile activity
+        if (SharedPrefManager.getInstance(this).isLoggedIn()) {
+            finish();
+            startActivity(new Intent(this, MainActivity.class));
+            return;
+        }
+
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String s_email = editEmail.getText().toString().trim();
-                String s_password = editPassword.getText().toString().trim();
-
-                //if user presses on login
-                //calling the method login
-                /*findViewById(R.id.btn_login).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        userLogin();
-                    }
-                });*/
+                userLogin();
             }
         });
 
@@ -51,22 +78,21 @@ public class LoginActivity extends AppCompatActivity {
         });
 
     } // eOF onCreate
-}
+
     // Methods =================================================================================
 
     /* ****************
      * LOGIN USER  *
      * ************** */
-    /*
     private void userLogin() {
         //first getting the values
-        final String username = editEmail.getText().toString();
+        final String username = editUsername.getText().toString();
         final String password = editPassword.getText().toString();
 
         //validating inputs
         if (TextUtils.isEmpty(username)) {
-            editEmail.setError("Please enter your username");
-            editEmail.requestFocus();
+            editUsername.setError("Please enter your username");
+            editUsername.requestFocus();
             return;
         }
 
@@ -76,73 +102,73 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        // if it PASSED ALL validations -> Start Async
-        class UserLogin extends AsyncTask<Void, Void, String> {
-
-            ProgressBar progressBar;
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                progressBar = (ProgressBar) findViewById(R.id.progressBar);
-                progressBar.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            protected void onPostExecute(String s) {
-                super.onPostExecute(s);
-                progressBar.setVisibility(View.GONE);
-
-
-                try {
-                    //converting response to json object
-                    JSONObject obj = new JSONObject(s);
-
-                    //if no error in response
-                    if (!obj.getBoolean("error")) {
-                        Toast.makeText(getApplicationContext(), obj.getString("message"), Toast.LENGTH_SHORT).show();
-
-                        //getting the user from the response
-                        JSONObject userJson = obj.getJSONObject("user");
-
-                        //creating a new user object
-                        Users_profile user = new Users_profile (
-                                userJson.getInt("id"),
-                                userJson.getString("username"),
-                                userJson.getString("email")
-                        );
-
-                        //storing the user in shared preferences
-                        SharedPrefManager.getInstance(getApplicationContext()).userLogin(user);
-
-                        //starting the profile activity
-                        finish();
-                        startActivity(new Intent(getApplicationContext(), MainActivity.class));
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Invalid username or password", Toast.LENGTH_SHORT).show();
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            protected String doInBackground(Void... voids) {
-                //creating request handler object
-                RequestHandler requestHandler = new RequestHandler();
-
-                //creating request parameters
-                HashMap<String, String> params = new HashMap<>();
-                params.put("username", username);
-                params.put("password", password);
-
-                //returing the response
-                return requestHandler.sendPostRequest(URLs.URL_LOGIN, params);
-            }
+        // if All validations are passed
+        JSONObject loginForm = new JSONObject();
+        try {
+            loginForm.put("subject", "login");
+            loginForm.put("username", username);
+            loginForm.put("password", password);
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
 
-        UserLogin ul = new UserLogin();
-        ul.execute();
-    } // eOF userLogin /*
+        //u_profile = new Users_profile(username, email);
+        RequestBody body = RequestBody.create(loginForm.toString(), parse("application/json; charset=utf-8"));
+        postRequest(postUrl, body);
+    } // eOF userLogin
 
-*/
+
+    private void postRequest(String postUrl, RequestBody body) {
+
+        OkHttpClient client = new OkHttpClient();
+
+        final Request request = new Request.Builder()
+                .url(postUrl)
+                .post(body)
+                .header("Accept", "application/json")
+                .header("Content-Type", "application/json")
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                call.cancel();
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), "Error connecting Flask server!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                try {
+                    final String responseString = response.body().string().trim();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (responseString.equals("success")) {
+                                Toast.makeText(getApplicationContext(),
+                                        "Registration completed successfully.", Toast.LENGTH_SHORT).show();
+
+                                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+
+                                finish();
+                            } else if (responseString.equals("failure")) {
+                                Toast.makeText(getApplicationContext(),
+                                        "Error by server", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(getApplicationContext(),
+                                        "ERR: " + responseString, Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } // eOF on response
+        }); // eOF call
+    } // eOF postRequest
+} // eOF LoginActivity

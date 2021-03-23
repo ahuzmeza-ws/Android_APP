@@ -9,7 +9,6 @@ import com.ahuzmeza.my_app.LoginActivity;
 public class SharedPrefManager {
 
     private static final String SHARED_PREF_NAME = "sharedpref";
-    private static final String KEY_ID = "keyid";
     private static final String KEY_USERNAME = "keyusername";
     private static final String KEY_EMAIL = "keyemail";
 
@@ -36,7 +35,6 @@ public class SharedPrefManager {
         SharedPreferences sharedPreferences = mCtx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        editor.putInt(KEY_ID,           u_profile.getId());
         editor.putString(KEY_USERNAME,  u_profile.getUsername());
         editor.putString(KEY_EMAIL,     u_profile.getEmail());
 
@@ -53,7 +51,6 @@ public class SharedPrefManager {
     public Users_profile getUser() {
         SharedPreferences sharedPreferences = mCtx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         return new Users_profile(
-                sharedPreferences.getInt(KEY_ID, -1),
                 sharedPreferences.getString(KEY_USERNAME, null),
                 sharedPreferences.getString(KEY_EMAIL, null)
         );

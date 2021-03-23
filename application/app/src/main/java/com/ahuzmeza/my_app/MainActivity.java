@@ -8,6 +8,7 @@ import android.view.MenuItem;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.ahuzmeza.my_app.Helpers.SharedPrefManager;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class MainActivity extends AppCompatActivity {
@@ -38,12 +39,15 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {
             return true;
         }
+        if (id == R.id.action_logout) {
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }
 
     public void log_out(MenuItem item) {
-        FirebaseAuth.getInstance().signOut();
+        SharedPrefManager.getInstance(this).logout();
         startActivity(new Intent(getApplicationContext(), LoginActivity.class));
         finish();
     }

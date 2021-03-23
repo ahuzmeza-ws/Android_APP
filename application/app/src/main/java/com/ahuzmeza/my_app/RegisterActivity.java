@@ -1,22 +1,22 @@
 package com.ahuzmeza.my_app;
 
 import com.ahuzmeza.my_app.Helpers.*;
+
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.ahuzmeza.my_app.Helpers.RequestHandler;
 import com.ahuzmeza.my_app.Helpers.SharedPrefManager;
+import com.ahuzmeza.my_app.LoginActivity;
+import com.ahuzmeza.my_app.MainActivity;
+import com.ahuzmeza.my_app.R;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
@@ -26,8 +26,6 @@ import java.io.IOException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.FormBody;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -48,6 +46,9 @@ public class RegisterActivity extends AppCompatActivity {
     Button      btnRegister;
     Button      btnLogin;
 
+    SharedPrefManager sharedpreferences;
+    Users_profile u_profile;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -59,14 +60,6 @@ public class RegisterActivity extends AppCompatActivity {
         editPassword    = findViewById(R.id.tb_password);
         btnRegister     = findViewById(R.id.btn_register);
         btnLogin        = findViewById(R.id.btn_login);
-
-        // if the user is already logged in we will directly start the profile activity
-        /*
-        if (SharedPrefManager.getInstance(this).isLoggedIn()) {
-            finish();
-            startActivity(new Intent(this, MainActivity.class));
-            return;
-        }*/
 
         btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -95,8 +88,7 @@ public class RegisterActivity extends AppCompatActivity {
         final String email = editEmail.getText().toString().trim();
         final String password = editPassword.getText().toString().trim();
 
-        // validations for fields to be completed
-        /*
+        // validations for fields to be filled
         if (TextUtils.isEmpty(username)) {
             editUsername.setError("Please enter username");
             editUsername.requestFocus();
@@ -120,8 +112,6 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-         */
-
         // if All validations are passed
         JSONObject registrationForm = new JSONObject();
         try {
@@ -132,6 +122,8 @@ public class RegisterActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+        u_profile = new Users_profile(username, email);
 
         RequestBody body = RequestBody.create( registrationForm.toString(), parse("application/json; charset=utf-8"));
 
@@ -173,6 +165,11 @@ public class RegisterActivity extends AppCompatActivity {
                             if (responseString.equals("success")) {
                                 Toast.makeText(getApplicationContext(),
                                         "Registration completed successfully.", Toast.LENGTH_SHORT).show();
+
+                                // Add user to shared prefrences and open MainActivity
+                                sharedpreferences.getInstance(getApplicationContext()).userLogin(u_profile);
+                                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+
                                 finish();
                             } else if (responseString.equals("failure")) {
                                 Toast.makeText(getApplicationContext(),
@@ -191,7 +188,7 @@ public class RegisterActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             } // eOf onResponse
-            }); // eOf callRequest
+        }); // eOf callRequest
 
     } // eOf postRequest
 } // eOF RegisterActivity
