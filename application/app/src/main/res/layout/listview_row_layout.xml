@@ -3,30 +3,30 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:layout_marginBottom="0dp"
-    android:layout_marginTop="0dp"
+    android:layout_marginTop="32dp"
     android:focusableInTouchMode="true">
 
-    <ImageView
-        android:id="@+id/fruitImg"
+    <Button
+        android:id="@+id/delete_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="5dp"
+        android:paddingHorizontal="0dp"
+        android:text="x" />
+
+    <TextView
+        android:id="@+id/subject_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:paddingRight="10dp"
+        android:layout_toRightOf="@+id/delete_btn"
         android:paddingTop="10dp"
-        android:paddingLeft="10dp"
-        android:scaleType="centerCrop" />
+        android:text="defaultExample"/>
 
     <TextView
-        android:id="@+id/fruitName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/fruitImg"
-        android:layout_centerVertical="true"
-        android:paddingTop="10dp"
-        android:text="Cherry"/>
-
-    <TextView
-        android:id="@+id/calories"
+        android:id="@+id/subject_average"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"

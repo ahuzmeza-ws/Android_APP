@@ -1,36 +1,25 @@
 package com.ahuzmeza.my_app;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.ahuzmeza.my_app.Helpers.RequestHandler;
 import com.ahuzmeza.my_app.Helpers.SharedPrefManager;
-import com.ahuzmeza.my_app.Helpers.URLs;
-import com.ahuzmeza.my_app.Helpers.Users_profile;
-
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
-import java.util.HashMap;
-
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
 import static okhttp3.MediaType.*;
 
 public class LoginActivity extends AppCompatActivity {
@@ -63,8 +52,11 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         btnLogin.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View v) {
+                editUsername.setText("root");
+                editPassword.setText("root");
                 userLogin();
             }
         });
@@ -81,9 +73,9 @@ public class LoginActivity extends AppCompatActivity {
 
     // Methods =================================================================================
 
-    /* ****************
-     * LOGIN USER  *
-     * ************** */
+    /***************** *
+     * LOGIN USER      *
+     * *************** */
     private void userLogin() {
         //first getting the values
         final String username = editUsername.getText().toString();

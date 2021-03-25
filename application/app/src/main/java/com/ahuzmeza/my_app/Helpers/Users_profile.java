@@ -3,7 +3,7 @@ package com.ahuzmeza.my_app.Helpers;
 public class Users_profile {
 
     private String  username;
-    private String email;
+    private String  email;
 
     public Users_profile(String _username, String _email) {
         this.username = _username;
