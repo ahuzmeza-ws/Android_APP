@@ -28,6 +28,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,10 +49,11 @@ public class FirstFragment extends Fragment {
     }
 
     // server related vars
+    /*
     private static final String IPV4ADRESS = "192.168.1.6";
     private static final int    PORT_NUMBER = 5000;
     static String postUrl = "http://"+IPV4ADRESS+":"+PORT_NUMBER+"/";
-
+*/
     // Subject Array Adapter that will contail Subjects got from server
     SubjectsArrayAdapter subjectArrayAdapter;
     public List<Subject> l_subjects = new ArrayList<>();
@@ -73,7 +75,11 @@ public class FirstFragment extends Fragment {
         listView.setAdapter(subjectArrayAdapter);
 
         // get all the subjects from server
-        getAllSubjects();
+        try {
+            subjectArrayAdapter.getAllSubjects();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
 
         view.findViewById(R.id.fab_add).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -91,6 +97,7 @@ public class FirstFragment extends Fragment {
         });
     }
 
+    /*
     public void postSubject(String _name) {
         // get the username of logged in user
         String username = SharedPrefManager.getInstance( getActivity()).getUser().getUsername();
@@ -160,6 +167,7 @@ public class FirstFragment extends Fragment {
             }
         }); // eOF callback()
     } // eOF onPost 'POST'
+
 
 
     public void getAllSubjects() {
@@ -279,7 +287,7 @@ public class FirstFragment extends Fragment {
     private void returnMyString(String myString) {
         //do your stuff
     }
-
+*/
 
     public void openAddDialog() {
 
@@ -296,8 +304,12 @@ public class FirstFragment extends Fragment {
         builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                postSubject( input.getText().toString().trim());
-                refreshAdapter();
+                try {
+                    subjectArrayAdapter.postSubject( input.getText().toString().trim());
+                    refreshAdapter();
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -310,15 +322,14 @@ public class FirstFragment extends Fragment {
         builder.show();
     }
 
-    public void refreshAdapter() {
+    /*  Method used to refresh the adapter
+    *   by: clearAdapter_andItsList()
+    *       - clears adapter's views content
+    *       - clears list that contains adapter's content
+    *   then gets all Subjects  */
+    public void refreshAdapter() throws UnsupportedEncodingException {
         subjectArrayAdapter.clearAdapter_andItsList();
-        getAllSubjects();
-        // fix this; kinda hacky
-        // solves duplicate entries by setting a new Adapter
-        subjectArrayAdapter = new SubjectsArrayAdapter(getActivity(), R.layout.listview_row_layout);
-        ListView listView = requireView().findViewById(R.id.listView);
-        listView.setAdapter(subjectArrayAdapter);
-
+        subjectArrayAdapter.getAllSubjects();
     }
 
 } // eOf FirstFragment

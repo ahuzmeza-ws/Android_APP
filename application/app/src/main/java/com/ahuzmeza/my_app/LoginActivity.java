@@ -61,8 +61,13 @@ public class LoginActivity extends AppCompatActivity {
             @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View v) {
+                //
+                //
+                //
                 editUsername.setText("root");
                 editPassword.setText("root");
+                //
+                //
                 userLogin();
             }
         });
