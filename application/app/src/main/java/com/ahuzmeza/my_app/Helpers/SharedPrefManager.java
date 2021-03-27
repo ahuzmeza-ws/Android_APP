@@ -50,10 +50,11 @@ public class SharedPrefManager {
     // get the logged in user profile
     public Users_profile getUser() {
         SharedPreferences sharedPreferences = mCtx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
-        return new Users_profile(
-                sharedPreferences.getString(KEY_USERNAME, null),
-                sharedPreferences.getString(KEY_EMAIL, null)
-        );
+            Users_profile u_profile = new Users_profile(
+                    sharedPreferences.getString(KEY_USERNAME, null),
+                    sharedPreferences.getString(KEY_EMAIL, null)
+            );
+        return u_profile;
     }
 
     //  logout the user
@@ -66,4 +67,5 @@ public class SharedPrefManager {
 
         mCtx.startActivity(new Intent(mCtx, LoginActivity.class));
     }
+
 }

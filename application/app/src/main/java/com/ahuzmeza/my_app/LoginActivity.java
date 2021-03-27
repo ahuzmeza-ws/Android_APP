@@ -10,6 +10,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.ahuzmeza.my_app.Helpers.SharedPrefManager;
+import com.ahuzmeza.my_app.Helpers.Users_profile;
+
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,6 +35,10 @@ public class LoginActivity extends AppCompatActivity {
     EditText editPassword;
     Button btnLogin;
     Button btnRegister;
+
+    private String username;
+
+    Users_profile u_profile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +84,7 @@ public class LoginActivity extends AppCompatActivity {
      * *************** */
     private void userLogin() {
         //first getting the values
-        final String username = editUsername.getText().toString();
+        username = editUsername.getText().toString();
         final String password = editPassword.getText().toString();
 
         //validating inputs
@@ -145,6 +151,8 @@ public class LoginActivity extends AppCompatActivity {
                                 Toast.makeText(getApplicationContext(),
                                         "Registration completed successfully.", Toast.LENGTH_SHORT).show();
 
+                                Users_profile u_profile = new Users_profile(username, "tempemail");
+                                SharedPrefManager.getInstance( getApplicationContext()).userLogin(u_profile);
                                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
 
                                 finish();

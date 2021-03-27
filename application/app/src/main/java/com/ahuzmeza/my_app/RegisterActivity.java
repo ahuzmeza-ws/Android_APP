@@ -46,7 +46,6 @@ public class RegisterActivity extends AppCompatActivity {
     Button      btnRegister;
     Button      btnLogin;
 
-    SharedPrefManager sharedpreferences;
     Users_profile u_profile;
 
     @Override
@@ -126,7 +125,6 @@ public class RegisterActivity extends AppCompatActivity {
         u_profile = new Users_profile(username, email);
 
         RequestBody body = RequestBody.create( registrationForm.toString(), parse("application/json; charset=utf-8"));
-
         postRequest(postUrl, body);
 
     } // eOD registerUser
@@ -167,8 +165,8 @@ public class RegisterActivity extends AppCompatActivity {
                                         "Registration completed successfully.", Toast.LENGTH_SHORT).show();
 
                                 // Add user to shared prefrences and open MainActivity
-                                sharedpreferences.getInstance(getApplicationContext()).userLogin(u_profile);
-                                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                                SharedPrefManager.getInstance( getApplicationContext()).userLogin(u_profile);
+                                startActivity(new Intent( getApplicationContext(), MainActivity.class));
 
                                 finish();
                             } else if (responseString.equals("failure")) {

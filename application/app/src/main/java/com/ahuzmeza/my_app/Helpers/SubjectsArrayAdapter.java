@@ -107,7 +107,6 @@ public class SubjectsArrayAdapter extends ArrayAdapter<Subject> {
                     case DialogInterface.BUTTON_POSITIVE:
                         //Yes button clicked
                         subjectsList.remove(position);
-                        Log.d("--> removing index: ", Integer.toString( position));
                         notifyDataSetChanged();
                         break;
 
@@ -123,6 +122,12 @@ public class SubjectsArrayAdapter extends ArrayAdapter<Subject> {
         builder.setMessage( question_message).setPositiveButton("Yes", dialogClickListener)
                 .setNegativeButton("No", dialogClickListener).show();
 
+    }
+
+    public void clearAdapter_andItsList() {
+        this.clear();
+        this.notifyDataSetChanged();
+        this.subjectsList.clear();
     }
 
 } // eOF SubjectsArrayAdapter
