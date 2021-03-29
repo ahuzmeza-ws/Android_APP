@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -61,13 +62,6 @@ public class LoginActivity extends AppCompatActivity {
             @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View v) {
-                //
-                //
-                //
-                editUsername.setText("root");
-                editPassword.setText("root");
-                //
-                //
                 userLogin();
             }
         });
@@ -157,6 +151,7 @@ public class LoginActivity extends AppCompatActivity {
                                         "Registration completed successfully.", Toast.LENGTH_SHORT).show();
 
                                 Users_profile u_profile = new Users_profile(username, "tempemail");
+
                                 SharedPrefManager.getInstance( getApplicationContext()).userLogin(u_profile);
                                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
 

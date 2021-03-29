@@ -7,12 +7,15 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,6 +50,7 @@ public class SubjectsArrayAdapter extends ArrayAdapter<Subject> {
     private static final int    PORT_NUMBER = 5000;
     static String postUrl = "http://"+IPV4ADRESS+":"+PORT_NUMBER+"/";
 
+    SubjectViewHolder viewHolder;
     private final List<Subject> subjectsList = new ArrayList<>();
 
     static class SubjectViewHolder {
@@ -58,6 +62,14 @@ public class SubjectsArrayAdapter extends ArrayAdapter<Subject> {
         super(context, textViewResourceId);
     }
 
+    public boolean itemAlreadyExists(String needle) {
+        for (Subject s : subjectsList) {
+            if (s.getSubjectName().equals(needle))
+                return false;
+        }
+        return true;
+    }
+
     @Override
     public void add(Subject _new) {
         this.subjectsList.add(_new);
@@ -66,8 +78,9 @@ public class SubjectsArrayAdapter extends ArrayAdapter<Subject> {
     }
 
     @Override
-    public void remove(@Nullable Subject object) {
-        super.remove(object);
+    public void remove(@Nullable Subject _old) {
+        this.subjectsList.remove(_old);
+        super.remove(_old);
         super.notifyDataSetChanged();
     }
 
@@ -90,7 +103,6 @@ public class SubjectsArrayAdapter extends ArrayAdapter<Subject> {
     public View getView(int position, View convertView, ViewGroup parent) {
 
         View row = convertView;
-        SubjectViewHolder viewHolder;
         if (row == null) {
             LayoutInflater inflater = (LayoutInflater) this.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             row = inflater.inflate(R.layout.listview_row_layout, parent, false);
@@ -108,14 +120,17 @@ public class SubjectsArrayAdapter extends ArrayAdapter<Subject> {
         Subject subj = getItem(position);
         viewHolder.subjectName.setText(subj.getSubjectName());
         viewHolder.subjectAverage.setText(Integer.toString( subj.getSubjectAverage()));
+        //viewHolder.subjectAverage.addTextChangedListener( textWatcher);
 
-        Button deleteBtn = (Button)row.findViewById(R.id.delete_btn);
+        Button deleteBtn = row.findViewById(R.id.delete_btn);
         deleteBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                delete_row(position, viewHolder.subjectName.getText().toString());
+                String toDelete = viewHolder.subjectName.getText().toString();
+                delete_row(position, toDelete);
             }
         });
+
 
         return row;
     }
@@ -132,7 +147,13 @@ public class SubjectsArrayAdapter extends ArrayAdapter<Subject> {
                 switch (which){
                     case DialogInterface.BUTTON_POSITIVE:
                         // Yes button clicked
-                        subjectsList.remove(position);
+                        try {
+                            subjectsList.remove(position);
+                            deleteSubject(subject_name);
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                        SubjectsArrayAdapter.super.remove(new Subject(subject_name, 0));
                         break;
                     case DialogInterface.BUTTON_NEGATIVE:
                         // No button clicked
@@ -154,6 +175,61 @@ public class SubjectsArrayAdapter extends ArrayAdapter<Subject> {
         this.notifyDataSetChanged();
     }
 
+    public void deleteSubject(String _name) throws UnsupportedEncodingException {
+        // get the username of logged in user
+        String username = SharedPrefManager.getInstance( getContext()).getUser().getUsername();
+        // if All validations are passed
+        JSONObject deleteSubject_Form = new JSONObject();
+        try {
+            deleteSubject_Form.put("subject", "delete_subject");
+            deleteSubject_Form.put("usr_username", username);
+            deleteSubject_Form.put("name", _name);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        //u_profile = new Users_profile(username, email);
+        RequestBody body = RequestBody.create( deleteSubject_Form.toString().getBytes("UTF-8"));
+        deleteSubject_Request(postUrl, body);
+    }
+    private void deleteSubject_Request(String postUrl, RequestBody body) {
+
+        OkHttpClient client = new OkHttpClient();
+
+        final Request request = new Request.Builder()
+                .url(postUrl)
+                .post(body)
+                .header("Accept", "application/json")
+                .header("Content-Type", "application/json")
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                call.cancel();
+                Log.e("-> deleteSubject", "onFailure");
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                try {
+                    final String responseString = response.body().string().trim();
+
+                    if (responseString.equals("success")) {
+                        Log.i("-> deleteSubject", "Success!");
+                    }
+                    else if (responseString.equals("failure"))
+                    {
+                        Log.i("-> deleteSubject", "Failed...");
+                    }
+                    else
+                        Log.d("Server err", responseString);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }); // eOF callback()
+    } // eOF onPost 'POST'
 
     public void postSubject(String _name) throws UnsupportedEncodingException {
         // get the username of logged in user
@@ -196,7 +272,13 @@ public class SubjectsArrayAdapter extends ArrayAdapter<Subject> {
                 try {
                     final String responseString = response.body().string().trim();
 
-                    Log.d("---- onResponse_post", responseString);
+                    if (responseString.equals("success")) {
+                        Log.i("-> postSubject", "Success!");
+                    }
+                    else
+                    {
+                        Log.i("-> postSubject", "Failed...");
+                    }
                     /*getContext().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -231,20 +313,6 @@ public class SubjectsArrayAdapter extends ArrayAdapter<Subject> {
 
     public void getAllSubjects() throws UnsupportedEncodingException {
 
-        //List<Subject> resultList = getAllSubjects();
-
-        //List<Subject> resultList = new ArrayList<>();
-
-        //if (elem_1.sameNameExists( l_subjects)) {
-        //    Toast.makeText(getActivity(),
-        //            "Subject already exists", Toast.LENGTH_SHORT).show();
-        //    Log.d("Already exists error: ", elem_1.getSubjectName() + "Already exists");
-        //}
-        //else {
-
-        //}
-
-
         String username = SharedPrefManager.getInstance( getContext()).getUser().getUsername();
         // if All validations are passed
         JSONObject subject_Form = new JSONObject();
@@ -275,8 +343,6 @@ public class SubjectsArrayAdapter extends ArrayAdapter<Subject> {
                         Subject got_subject = new Subject(subj_name, 0);
                         subjectsList.add( got_subject);
                         SubjectsArrayAdapter.super.add( got_subject);
-                        //l_subjects.add(got_subject);
-                        Log.i("-------- \n", got_subject.getSubjectName());
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -341,12 +407,100 @@ public class SubjectsArrayAdapter extends ArrayAdapter<Subject> {
 
     } // eOF onPost
 
-   // private void returnMyString(String myString) {
-   //     //do your stuff
-   // }
+    // private void returnMyString(String myString) {
+    //     //do your stuff
+    // }
+
+    /*  Method used to refresh the adapter
+     *   by: clearAdapter_andItsList()
+     *       - clears adapter's views content
+     *       - clears list that contains adapter's content
+     *   then gets all Subjects  */
+    public void refreshAdapter() throws UnsupportedEncodingException {
+        this.clearAdapter_andItsList();
+        this.getAllSubjects();
+    }
+
+    private final TextWatcher textWatcher = new TextWatcher() {
+
+        public void afterTextChanged(Editable s) {
+
+        }
+
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
+
+        public void onTextChanged(CharSequence s, int start, int before,
+                                  int count) {
+           /* try {
+                updateSubjectAverage(viewHolder.subjectName.getText().toString().trim(),
+                                        Integer.parseInt(viewHolder.subjectAverage.getText().toString().trim()));
+                refreshAdapter();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            } */
+        }
+    };
+
+    public void updateSubjectAverage(String _name, int new_average) throws UnsupportedEncodingException {
+        // get the username of logged in user
+        String username = SharedPrefManager.getInstance( getContext()).getUser().getUsername();
+        // if All validations are passed
+        JSONObject postSubject_form = new JSONObject();
+        try {
+            postSubject_form.put("subject", "update_subject_average");
+            postSubject_form.put("usr_username", username);
+            postSubject_form.put("name", _name);
+            postSubject_form.put("new_average", new_average);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        //u_profile = new Users_profile(username, email);
+        RequestBody body = RequestBody.create( postSubject_form.toString().getBytes("UTF-8"));
+        updateSubjectAverage_Request(postUrl, body);
+    }
+    private void updateSubjectAverage_Request(String postUrl, RequestBody body) {
+
+        OkHttpClient client = new OkHttpClient();
+
+        final Request request = new Request.Builder()
+                .url(postUrl)
+                .post(body)
+                .header("Accept", "application/json")
+                .header("Content-Type", "application/json")
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                call.cancel();
+//                Toast.makeText(getContext(), "Error connecting Flask server!", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) {
+                try {
+                    final String responseString = response.body().string().trim();
+
+                    if ( responseString.equals( "no_subject_entries")) {
+                        Log.d("--- update Average", "success");
+                    }
+                    else
+                    {
+                        Log.d("--- update Average", "failed");
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
 
 
+        }); // eOF callback()
 
+
+    } // eOF onPost
 
 
 } // eOF SubjectsArrayAdapter

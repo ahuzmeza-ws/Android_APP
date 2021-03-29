@@ -56,7 +56,7 @@ public class FirstFragment extends Fragment {
 */
     // Subject Array Adapter that will contail Subjects got from server
     SubjectsArrayAdapter subjectArrayAdapter;
-    public List<Subject> l_subjects = new ArrayList<>();
+    //public List<Subject> l_subjects = new ArrayList<>();
 
     @Override
     public View onCreateView(
@@ -88,13 +88,13 @@ public class FirstFragment extends Fragment {
             }
         });
 
-        view.findViewById(R.id.button_first).setOnClickListener(new View.OnClickListener() {
+        /*view.findViewById(R.id.button_first).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 NavHostFragment.findNavController(FirstFragment.this)
                         .navigate(R.id.action_FirstFragment_to_SecondFragment);
             }
-        });
+        }); */
     }
 
     /*
@@ -305,8 +305,14 @@ public class FirstFragment extends Fragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 try {
-                    subjectArrayAdapter.postSubject( input.getText().toString().trim());
-                    refreshAdapter();
+                    String gotName = input.getText().toString().trim();
+                    if (subjectArrayAdapter.itemAlreadyExists( gotName)) {
+                        subjectArrayAdapter.postSubject(gotName);
+                        subjectArrayAdapter.add(new Subject(gotName, 0));
+                    }
+                    else {
+                        Log.i("-> Add Subject", "Already exists");
+                    }
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
@@ -326,11 +332,11 @@ public class FirstFragment extends Fragment {
     *   by: clearAdapter_andItsList()
     *       - clears adapter's views content
     *       - clears list that contains adapter's content
-    *   then gets all Subjects  */
+    *   then gets all Subjects
     public void refreshAdapter() throws UnsupportedEncodingException {
         subjectArrayAdapter.clearAdapter_andItsList();
         subjectArrayAdapter.getAllSubjects();
-    }
+    } */
 
 } // eOf FirstFragment
 
