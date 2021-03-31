@@ -111,6 +111,16 @@ public class SubjectsArrayAdapter extends ArrayAdapter<Subject> {
             viewHolder.subjectName = row.findViewById(R.id.subject_name);
             viewHolder.subjectAverage = row.findViewById(R.id.subject_average);
 
+            Button deleteBtn = row.findViewById(R.id.delete_btn);
+            deleteBtn.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View v) {
+                    //String toDelete = viewHolder.subjectName.getText().toString();
+                    Log.d("! toDdelete position", Integer.toString(position));
+                    delete_row(position, getItem(position).getSubjectName());
+                }
+            });
+
             row.setTag(viewHolder);
 
         } else {
@@ -121,16 +131,6 @@ public class SubjectsArrayAdapter extends ArrayAdapter<Subject> {
         viewHolder.subjectName.setText(subj.getSubjectName());
         viewHolder.subjectAverage.setText(Integer.toString( subj.getSubjectAverage()));
         //viewHolder.subjectAverage.addTextChangedListener( textWatcher);
-
-        Button deleteBtn = row.findViewById(R.id.delete_btn);
-        deleteBtn.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                String toDelete = viewHolder.subjectName.getText().toString();
-                delete_row(position, toDelete);
-            }
-        });
-
 
         return row;
     }
